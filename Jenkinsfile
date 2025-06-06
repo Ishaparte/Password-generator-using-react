@@ -10,10 +10,11 @@ pipeline {
 
   stages {
     stage('Checkout') {
-      steps {
-        git 'https://github.com/Ishaparte/Password-generator-using-react.git' // Your GitHub repo
-      }
-    }
+  steps {
+    git branch: 'main', url: 'https://github.com/Ishaparte/Password-generator-using-react.git'
+  }
+}
+
 
     stage('Build Docker Image') {
       steps {
