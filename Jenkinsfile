@@ -9,16 +9,17 @@ pipeline {
   }
 
   stages {
+
     stage('Build Docker Image') {
       steps {
-        script {
-          docker.build("${IMAGE_NAME}")
-        }
+        echo "🔨 Building Docker image..."
+        sh "docker build -t ${IMAGE_NAME} ."
       }
     }
 
     stage('Authenticate with GCP') {
       steps {
+        echo "🔐 Authenticating with GCP..."
         withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
           sh '''
             gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
@@ -31,14 +32,14 @@ pipeline {
 
     stage('Push Docker Image to GCP') {
       steps {
-        script {
-          sh "docker push ${IMAGE_NAME}"
-        }
+        echo "📤 Pushing Docker image to GCP..."
+        sh "docker push ${IMAGE_NAME}"
       }
     }
 
     stage('Deploy to GCP VM') {
       steps {
+        echo "🚀 Deploying Docker container on GCP VM..."
         sshagent(['gcp-vm-ssh']) {
           sh """
             ssh -o StrictHostKeyChecking=no ${VM_USER}@${VM_HOST} '
@@ -55,10 +56,10 @@ pipeline {
 
   post {
     success {
-      echo " Deployment completed successfully."
+      echo "✅ Deployment completed successfully."
     }
     failure {
-      echo " Deployment failed. Check the logs."
+      echo "❌ Deployment failed. Check the logs."
     }
   }
 }
