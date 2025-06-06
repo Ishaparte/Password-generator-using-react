@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git 'https://github.com/your-username/your-react-app.git' // Your GitHub repo
+        git 'https://github.com/Ishaparte/Password-generator-using-react.git' // Your GitHub repo
       }
     }
 
