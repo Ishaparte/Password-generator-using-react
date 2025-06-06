@@ -2,20 +2,13 @@ pipeline {
   agent any
 
   environment {
-    PROJECT_ID = "passwordgenerator-462008"                         // GCP project ID
-    IMAGE_NAME = "gcr.io/passwordgenerator-462008/password"              // Image path in GCP Container Registry
-    VM_USER = "ishaparte4"                               // GCP VM username
-    VM_HOST = "34.47.252.50"                             // GCP VM IP address
+    PROJECT_ID = "passwordgenerator-462008"
+    IMAGE_NAME = "gcr.io/passwordgenerator-462008/password"
+    VM_USER = "ishaparte4"
+    VM_HOST = "34.47.252.50"
   }
 
   stages {
-    stage('Checkout') {
-  steps {
-    git branch: 'main', url: 'https://github.com/Ishaparte/Password-generator-using-react.git'
-  }
-}
-
-
     stage('Build Docker Image') {
       steps {
         script {
