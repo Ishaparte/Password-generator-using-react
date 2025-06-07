@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = 'password'
         REGION = 'us-central1'
         SERVICE_NAME = 'password-generator-app'
-        GCLOUD_PATH = '""'
+       
     }
 
     stages {
