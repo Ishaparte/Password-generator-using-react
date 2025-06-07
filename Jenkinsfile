@@ -6,6 +6,7 @@ pipeline {
     IMAGE_NAME = "gcr.io/passwordgenerator-462008/password"
     VM_USER = "ishaparte4"
     VM_HOST = "34.47.252.50"
+    GCLOUD_PATH = "C:\\Users\\lenovo\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud"
   }
 
   stages {
@@ -21,11 +22,11 @@ pipeline {
       steps {
         echo "🔐 Authenticating with GCP..."
         withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-          bat '''
-          gcloud auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%
-          gcloud config set project %PROJECT_ID%
-          gcloud auth configure-docker --quiet
-          '''
+          bat """
+          \"%GCLOUD_PATH%\" auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%
+          \"%GCLOUD_PATH%\" config set project %PROJECT_ID%
+          \"%GCLOUD_PATH%\" auth configure-docker --quiet
+          """
         }
       }
     }
@@ -44,9 +45,9 @@ pipeline {
           bat """
           ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_HOST% ^
             "docker pull %IMAGE_NAME% && ^
-             docker stop react-app || exit 0 && ^
-             docker rm react-app || exit 0 && ^
-             docker run -d -p 80:3000 --name react-app %IMAGE_NAME%"
+             docker stop password || exit 0 && ^
+             docker rm password || exit 0 && ^
+             docker run -d -p 80:3000 --name password %IMAGE_NAME%"
           """
         }
       }
