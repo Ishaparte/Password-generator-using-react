@@ -25,7 +25,7 @@ pipeline {
 
         stage('Authenticate with GCP & Push Image') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     withEnv(['PATH=C:\\Users\\lenovo\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin;%PATH%']) {
                         bat '''
                             set "PATH=C:\\Program Files\\Docker\\Docker\\resources\\bin;%PATH%"
