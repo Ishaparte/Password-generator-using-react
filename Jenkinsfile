@@ -28,7 +28,7 @@ pipeline {
         withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
             withEnv(['PATH=C:\\Users\\lenovo\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud;%PATH%']) {
                 bat '''
-                    set "PATH=C:\Program Files\Docker\Docker\resources\bin\docker;%PATH%"
+                    set "PATH=C:\Program Files\Docker\Docker\resources\bin;%PATH%"
 
                     REM Step 1: Authenticate using local gcloud
                     gcloud auth activate-service-account --key-file="%GOOGLE_APPLICATION_CREDENTIALS%"
