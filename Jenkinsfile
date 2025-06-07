@@ -4,9 +4,9 @@ pipeline {
     environment {
         PROJECT_ID = 'passwordgenerator-462008'
         IMAGE_NAME = 'password'
-        REGION = 'us-central1'
+        REGION = 'asia-south1'
         SERVICE_NAME = 'password-generator-app'
-       
+        GCR_IMAGE_NAME = "gcr.io/passwordgenerator-462008/password"
     }
 
     stages {
@@ -19,64 +19,50 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🔨 Building Docker image...'
-                bat "docker build -t gcr.io/%PROJECT_ID%/%IMAGE_NAME% ."
+                bat "docker build -t %IMAGE_NAME% ."
             }
         }
 
         stage('Authenticate with GCP & Push Image') {
-    steps {
-        withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-            withEnv(['PATH=C:\\Users\\lenovo\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud;%PATH%']) {
-                bat '''
-                    set "PATH=C:\Program Files\Docker\Docker\resources\bin;%PATH%"
+            steps {
+                withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    withEnv(['PATH=C:\\Users\\lenovo\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin;%PATH%']) {
+                        bat '''
+                            set "PATH=C:\\Program Files\\Docker\\Docker\\resources\\bin;%PATH%"
 
-                    REM Step 1: Authenticate using local gcloud
-                    gcloud auth activate-service-account --key-file="%GOOGLE_APPLICATION_CREDENTIALS%"
+                            REM Step 1: Authenticate with service account
+                            gcloud auth activate-service-account --key-file="%GOOGLE_APPLICATION_CREDENTIALS%"
 
-                    REM Step 2: Set project
-                    gcloud config set project rbca-460307
+                            REM Step 2: Set project
+                            gcloud config set project %PROJECT_ID%
 
-                    REM Step 3: Get access token and login to Docker
-                    for /f %%t in ('gcloud auth print-access-token') do docker login -u oauth2accesstoken -p %%t https://gcr.io
+                            REM Step 3: Authenticate Docker to GCR
+                            for /f %%t in ('gcloud auth print-access-token') do docker login -u oauth2accesstoken -p %%t https://gcr.io
 
-                    REM Step 4: Tag and push image to GCR
-                    docker tag %IMAGE_NAME%:latest %GCR_IMAGE_NAME%
-                    docker push %GCR_IMAGE_NAME%
-                '''
+                            REM Step 4: Tag and push Docker image
+                            docker tag %IMAGE_NAME%:latest %GCR_IMAGE_NAME%
+                            docker push %GCR_IMAGE_NAME%
+                        '''
+                    }
+                }
             }
         }
-    }
-}
-
-        // stage('Authenticate with GCP') {
-        //     steps {
-        //         echo '🔐 Authenticating with GCP...'
-        //         withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-        //             bat "%GCLOUD_PATH% auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%"
-        //         }
-        //     }
-        // }
-
-        // stage('Push Docker Image') {
-        //     steps {
-        //         echo '📤 Pushing Docker image to GCR...'
-        //         bat "docker push gcr.io/%PROJECT_ID%/%IMAGE_NAME%"
-        //     }
-        // }
-
 
         stage('Deploy to Cloud Run') {
             steps {
-                echo '🚀 Deploying to Google Cloud Run...'
-                bat """
-                %GCLOUD_PATH% config set project %PROJECT_ID%
-                %GCLOUD_PATH% config set run/region %REGION%
-                %GCLOUD_PATH% run deploy %SERVICE_NAME% \\
-                    --image gcr.io/%PROJECT_ID%/%IMAGE_NAME% \\
-                    --platform managed \\
-                    --allow-unauthenticated
-                """
+                withEnv(['PATH=C:\\Users\\lenovo\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin;%PATH%']) {
+                    bat '''
+                        gcloud config set project %PROJECT_ID%
+                        gcloud config set run/region %REGION%
+                        gcloud run deploy %SERVICE_NAME% ^
+                            --image %GCR_IMAGE_NAME% ^
+                            --platform managed ^
+                            --allow-unauthenticated
+                    '''
+                }
             }
         }
     }
 }
+
+
