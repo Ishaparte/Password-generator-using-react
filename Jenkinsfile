@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = 'password'
         REGION = 'us-central1'
         SERVICE_NAME = 'password-generator-app'
-        GCLOUD_PATH = '"C:\\Users\\lenovo\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud"'
+        GCLOUD_PATH = '""'
     }
 
     stages {
@@ -23,6 +23,31 @@ pipeline {
             }
         }
 
+        stage('Authenticate with GCP & Push Image') {
+    steps {
+        withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+            withEnv(['PATH=C:\\Users\\lenovo\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud;%PATH%']) {
+                bat '''
+                    set "PATH=C:\Program Files\Docker\Docker\resources\bin\docker;%PATH%"
+
+                    REM Step 1: Authenticate using local gcloud
+                    gcloud auth activate-service-account --key-file="%GOOGLE_APPLICATION_CREDENTIALS%"
+
+                    REM Step 2: Set project
+                    gcloud config set project rbca-460307
+
+                    REM Step 3: Get access token and login to Docker
+                    for /f %%t in ('gcloud auth print-access-token') do docker login -u oauth2accesstoken -p %%t https://gcr.io
+
+                    REM Step 4: Tag and push image to GCR
+                    docker tag %IMAGE_NAME%:latest %GCR_IMAGE_NAME%
+                    docker push %GCR_IMAGE_NAME%
+                '''
+            }
+        }
+    }
+}
+
         // stage('Authenticate with GCP') {
         //     steps {
         //         echo '🔐 Authenticating with GCP...'
@@ -32,12 +57,13 @@ pipeline {
         //     }
         // }
 
-        stage('Push Docker Image') {
-            steps {
-                echo '📤 Pushing Docker image to GCR...'
-                bat "docker push gcr.io/%PROJECT_ID%/%IMAGE_NAME%"
-            }
-        }
+        // stage('Push Docker Image') {
+        //     steps {
+        //         echo '📤 Pushing Docker image to GCR...'
+        //         bat "docker push gcr.io/%PROJECT_ID%/%IMAGE_NAME%"
+        //     }
+        // }
+
 
         stage('Deploy to Cloud Run') {
             steps {
