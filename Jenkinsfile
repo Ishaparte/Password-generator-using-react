@@ -23,14 +23,14 @@ pipeline {
             }
         }
 
-        stage('Authenticate with GCP') {
-            steps {
-                echo '🔐 Authenticating with GCP...'
-                withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    bat "%GCLOUD_PATH% auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%"
-                }
-            }
-        }
+        // stage('Authenticate with GCP') {
+        //     steps {
+        //         echo '🔐 Authenticating with GCP...'
+        //         withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+        //             bat "%GCLOUD_PATH% auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%"
+        //         }
+        //     }
+        // }
 
         stage('Push Docker Image') {
             steps {
